@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"fr.surakarta.Grille","l":"Noeud"}]
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"fr.surakarta.grid","l":"Node"},{"p":"fr.surakarta.piece","l":"Piece"},{"p":"fr.surakarta.piece","l":"PieceType"},{"p":"fr.surakarta.player","l":"Player"},{"p":"fr.surakarta.game","l":"Surakarta"}]
