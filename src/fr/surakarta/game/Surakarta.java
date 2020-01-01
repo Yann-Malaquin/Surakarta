@@ -9,7 +9,6 @@ import javafx.animation.KeyValue;
 import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -104,11 +103,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         heightStep = height / 9;
         widthStep = width / 9;
         construirePlateauJeu(primaryStage);
-
-        for (int i = 0; i < root.getChildren().size(); i++){
-            System.out.println("i = " + i + " " + root.getChildren().get(i) + "\n");
-        }
-
     }
 
     /**
@@ -244,7 +238,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         arc.setStroke(Color.RED);
         //le remplissage est null assurant une "transparence"
         arc.setFill(null);
-        arc.setId("Arc"+i);
+        arc.setId("Arc" + i);
         i++;
         //ajout au groupe
         root.getChildren().add(arc);
@@ -274,14 +268,12 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         arc.setStroke(Color.GREEN);
         //le remplissage est null assurant une "transparence"
         arc.setFill(null);
-        arc.setId("Arc"+i);
+        arc.setId("Arc" + i);
         i++;
         //ajout au groupe
         root.getChildren().add(arc);
 
     }
-
-
 
 
     public static void main(String[] args) {
@@ -331,10 +323,18 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 Piece piece = pionSelectionne;
 
                 //on vérifie si l'on peut prendre le pion
-                if (checkKill(p, endX, endY)) {
+                if (checkKill(p, startX, startY, endX, endY) && p.getType() != piece.getType()) {
                     kill(piece, p);
-                    pionSelectionne.select();
                     //pour ne pas permettre le click sur le pion adverse
+                } else if (piece.isSelected()) {
+
+                    /*PauseTransition delay = new PauseTransition(Duration.seconds(1));
+                    delay.setOnFinished(event -> piece.select());
+                    delay.play();*/
+                    piece.select();
+                    pionSelectionne = null;
+                } else {
+                    p.select();
                     pionSelectionne = null;
                 }
             }
@@ -382,7 +382,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         MoveTo = point de départ
         LineTo point d'arrivée
          */
-        path.getElements().addAll(new MoveTo(piece.getCenterX(),piece.getCenterY()), new LineTo(3*widthStep,4*heightStep));
+        path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(3 * widthStep, 4 * heightStep));
 
         /*
         on ajoute au chemin les données en rapport avec l'arc de cercle
@@ -390,7 +390,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         ArcTo l'arc de cercle
         sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
          */
-        path.getElements().addAll(new MoveTo(3*widthStep,4*heightStep), new ArcTo(55,55,0,4*widthStep,3*heightStep,true,true));
+        path.getElements().addAll(new MoveTo(3 * widthStep, 4 * heightStep), new ArcTo(55, 55, 0, 4 * widthStep, 3 * heightStep, true, true));
 
         //permet de faire l'animation, celle-ci durera 3 secondes
         PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
@@ -401,17 +401,13 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         pt.play();
 
         //lorsque l'animation est terminée alors on prend le pion
-        pt.setOnFinished(e->{
+        pt.setOnFinished(e -> {
             if (piece.getType() == PieceType.P1) {
                 root.getChildren().remove(p);
-                System.out.println(getlPlayer().get(0).getlPiece());
                 getlPlayer().get(0).getlPiece().remove(p);
-                System.out.println(getlPlayer().get(0).getlPiece());
             } else {
                 root.getChildren().remove(p);
-                System.out.println(getlPlayer().get(1).getlPiece());
                 getlPlayer().get(1).getlPiece().remove(p);
-                System.out.println(getlPlayer().get(1).getlPiece());
             }
         });
 
@@ -420,18 +416,64 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
     /**
      * Permet de vérifier si une prise est possible ou non
      *
-     * @param p Le pion visé
-     * @param x l'abscisse du pion visé
-     * @param y L'ordonnée du pion visé
+     * @param p      Le pion visé
+     * @param startX l'abscisse du pion de départ
+     * @param startY l'ordonnée du pion de départ
+     * @param endX   l'abscisse du pion d'arrivée
+     * @param endY   l'ordonnée du pion d'arrivée
      * @return true si l'on peut prendre un pion. Il est de type boolean
      */
-    public boolean checkKill(Piece p, int x, int y) {
+    public boolean checkKill(Piece p, int startX, int startY, int endX, int endY) {
 
         //si l'on est sur un coin on return false
-        if (((x == 0) && (y == 0 || y == 5)) || ((x == 5) && (y == 0 || y == 5))) {
+        if (((endX == 0) && (endY == 0 || endY == 5)) || ((endX == 5) && (endY == 0 || endY == 5))) {
             return false;
         }
 
+        /*
+         Vérification s'il existe un ou plusieurs pions à gauche du pion de départ
+         Vérification s'il existe au moins 1 pion en sortie d'arc de cercle
+         */
+
+        if (p.getType() == PieceType.P1) {
+            System.out.println("P1");
+            int cpt = 0;
+            for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                int _x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                int _y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                if (_y == startY && _x < startX) {
+                    return false;
+                }
+
+                if (_x == 2) {
+                    cpt++;
+                    if (cpt > 1) {
+                        return false;
+                    }
+                }
+
+            }
+        } else if (p.getType() == PieceType.P2) {
+            int cpt = 0;
+            System.out.println("P2");
+            for (Piece _p : getlPlayer().get(0).getlPiece()) {
+
+                int _x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                int _y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                if (_y == startY && _x < startX) {
+                    return false;
+                }
+
+                if (_x == 1) {
+                    cpt++;
+                    if (cpt > 1) {
+                        return false;
+                    }
+                }
+            }
+        }
 
 
         //Si après vérification on arrive ici alors le pion est prenable.
