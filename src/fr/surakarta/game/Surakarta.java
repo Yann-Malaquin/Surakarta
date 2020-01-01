@@ -6,6 +6,7 @@ import fr.surakarta.piece.PieceType;
 import fr.surakarta.player.Player;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -14,9 +15,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Line;
+import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -42,6 +41,8 @@ import java.util.List;
  */
 
 public class Surakarta extends Application implements EventHandler<MouseEvent> {
+
+    private static int i = 0;
 
     /**
      * hauteur du panneau
@@ -103,6 +104,10 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         heightStep = height / 9;
         widthStep = width / 9;
         construirePlateauJeu(primaryStage);
+
+        for (int i = 0; i < root.getChildren().size(); i++){
+            System.out.println("i = " + i + " " + root.getChildren().get(i) + "\n");
+        }
 
     }
 
@@ -200,17 +205,19 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             root.getChildren().add(line1);
             root.getChildren().add(line2);
 
-            initPetitArc(170, 170, 0);
-            initPetitArc(440, 170, -90);
-            initPetitArc(170, 440, 90);
-            initPetitArc(440, 440, 180);
-
-            initGrandArc(170, 170, 0);
-            initGrandArc(440, 170, -90);
-            initGrandArc(170, 440, 90);
-            initGrandArc(440, 440, 180);
-
         }
+
+
+        initPetitArc(170, 170, 0);
+        initPetitArc(440, 170, -90);
+        initPetitArc(170, 440, 90);
+        initPetitArc(440, 440, 180);
+
+        initGrandArc(170, 170, 0);
+        initGrandArc(440, 170, -90);
+        initGrandArc(170, 440, 90);
+        initGrandArc(440, 440, 180);
+
     }
 
 
@@ -237,6 +244,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         arc.setStroke(Color.RED);
         //le remplissage est null assurant une "transparence"
         arc.setFill(null);
+        arc.setId("Arc"+i);
+        i++;
         //ajout au groupe
         root.getChildren().add(arc);
 
@@ -265,10 +274,14 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         arc.setStroke(Color.GREEN);
         //le remplissage est null assurant une "transparence"
         arc.setFill(null);
+        arc.setId("Arc"+i);
+        i++;
         //ajout au groupe
         root.getChildren().add(arc);
 
     }
+
+
 
 
     public static void main(String[] args) {
@@ -361,36 +374,46 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         double ydest = p.getCenterY();
 
 
-        KeyFrame kill = new KeyFrame(new Duration(500),
+        //Chemin à "parcourir" pour l'animation complète
+        Path path = new Path();
 
-                // événement qui prendra effet lors de l'écoulement total des 500ms
-                new EventHandler<ActionEvent>() {
-                    /**
-                     * A la fin des 500ms, suivant le joueur le pion adverse sera supprimé du plateau et également de sa liste de pion
-                     * @param event
-                     *          Le type d'événement reccueilli
-                     */
-                    @Override
-                    public void handle(ActionEvent event) {
-                        if (piece.getType() == PieceType.P1) {
-                            root.getChildren().remove(p);
-                            System.out.println(getlPlayer().get(0).getlPiece());
-                            getlPlayer().get(0).getlPiece().remove(p);
-                            System.out.println(getlPlayer().get(0).getlPiece());
-                        } else {
-                            root.getChildren().remove(p);
-                            System.out.println(getlPlayer().get(1).getlPiece());
-                            getlPlayer().get(1).getlPiece().remove(p);
-                            System.out.println(getlPlayer().get(1).getlPiece());
-                        }
-                    }
-                },
+        /*
+        on ajoute au chemin la translation suivant une ligne
+        MoveTo = point de départ
+        LineTo point d'arrivée
+         */
+        path.getElements().addAll(new MoveTo(piece.getCenterX(),piece.getCenterY()), new LineTo(3*widthStep,4*heightStep));
 
-                new KeyValue(pionSelectionne.centerXProperty(), xdest),
-                new KeyValue(pionSelectionne.centerYProperty(), ydest));
+        /*
+        on ajoute au chemin les données en rapport avec l'arc de cercle
+        MoveTo point de départ
+        ArcTo l'arc de cercle
+        sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
+         */
+        path.getElements().addAll(new MoveTo(3*widthStep,4*heightStep), new ArcTo(55,55,0,4*widthStep,3*heightStep,true,true));
 
-        timeline.getKeyFrames().add(kill);
-        timeline.play();
+        //permet de faire l'animation, celle-ci durera 3 secondes
+        PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+        //nombre de répétition que l'on souhaite avoir, ici 1
+        pt.setCycleCount(1);
+        //on lance l'animation
+        pt.play();
+
+        //lorsque l'animation est terminée alors on prend le pion
+        pt.setOnFinished(e->{
+            if (piece.getType() == PieceType.P1) {
+                root.getChildren().remove(p);
+                System.out.println(getlPlayer().get(0).getlPiece());
+                getlPlayer().get(0).getlPiece().remove(p);
+                System.out.println(getlPlayer().get(0).getlPiece());
+            } else {
+                root.getChildren().remove(p);
+                System.out.println(getlPlayer().get(1).getlPiece());
+                getlPlayer().get(1).getlPiece().remove(p);
+                System.out.println(getlPlayer().get(1).getlPiece());
+            }
+        });
 
     }
 
@@ -409,39 +432,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             return false;
         }
 
-        //s'il s'agit d'un pion du joueur 1
-        if (p.getType() == PieceType.P1) {
-            /* on parcourt sa liste de pion pour voir si un pion est collé à lui.
-            On vérifie d'abord horizontalement. S'il en existe un alors on renvoie false, le pion n'est pas prenable.
-            On vérifie ensuite vericalement. S'il en existe un alors on renvoie false, le pion n'est pas prenable.
-             */
 
-            for (Piece _p : getlPlayer().get(0).getlPiece()) {
-
-                int endX = (int) Math.round(_p.getCenterX() / widthStep - decalage);
-                int endY = (int) Math.round(_p.getCenterY() / heightStep - decalage);
-
-                if (x == endX && y + 1 == endY) {
-                    return false;
-                } else if (x + 1 == endX && y == endY) {
-                    return false;
-                }
-            }
-        }
-
-        if (p.getType() == PieceType.P2) {
-            for (Piece _p : getlPlayer().get(1).getlPiece()) {
-
-                int endX = (int) Math.round(_p.getCenterX() / widthStep - decalage);
-                int endY = (int) Math.round(_p.getCenterY() / heightStep - decalage);
-
-                if (x == endX && y + 1 == endY) {
-                    return false;
-                } else if (x + 1 == endX && y == endY) {
-                    return false;
-                }
-            }
-        }
 
         //Si après vérification on arrive ici alors le pion est prenable.
         return true;
