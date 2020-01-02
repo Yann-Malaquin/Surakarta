@@ -18,6 +18,7 @@ import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -369,9 +370,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param p     Le pion qui se fera prendre
      */
     private void kill(Piece piece, Piece p) {
-        Timeline timeline = new Timeline();
-        double xdest = p.getCenterX();
-        double ydest = p.getCenterY();
 
 
         //Chemin à "parcourir" pour l'animation complète
@@ -391,6 +389,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
          */
         path.getElements().addAll(new MoveTo(3 * widthStep, 4 * heightStep), new ArcTo(55, 55, 0, 4 * widthStep, 3 * heightStep, true, true));
+        path.getElements().addAll(new MoveTo(4*widthStep,3*heightStep),new LineTo(p.getCenterX(),p.getCenterY()));
+
 
         //permet de faire l'animation, celle-ci durera 3 secondes
         PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
@@ -400,9 +400,13 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         //on lance l'animation
         pt.play();
 
+        piece.setCenterX(p.getCenterX());
+        piece.setCenterY(p.getCenterY());
+
         //lorsque l'animation est terminée alors on prend le pion
         pt.setOnFinished(e -> {
             if (piece.getType() == PieceType.P1) {
+                System.out.println(piece.toString());
                 root.getChildren().remove(p);
                 getlPlayer().get(0).getlPiece().remove(p);
             } else {
