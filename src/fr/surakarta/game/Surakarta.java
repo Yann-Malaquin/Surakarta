@@ -18,7 +18,6 @@ import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -203,15 +202,15 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         }
 
 
-        initPetitArc(170, 170, 0);
-        initPetitArc(440, 170, -90);
-        initPetitArc(170, 440, 90);
-        initPetitArc(440, 440, 180);
+        initSmallArc(170, 170, 0);
+        initSmallArc(440, 170, -90);
+        initSmallArc(170, 440, 90);
+        initSmallArc(440, 440, 180);
 
-        initGrandArc(170, 170, 0);
-        initGrandArc(440, 170, -90);
-        initGrandArc(170, 440, 90);
-        initGrandArc(440, 440, 180);
+        initBigArc(170, 170, 0);
+        initBigArc(440, 170, -90);
+        initBigArc(170, 440, 90);
+        initBigArc(440, 440, 180);
 
     }
 
@@ -224,7 +223,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param angle L'angle de l'arc de cercle, permettant ainsi sa rotation et une bonne disposition
      */
 
-    public void initPetitArc(int x, int y, double angle) {
+    public void initSmallArc(int x, int y, double angle) {
 
         Arc arc = new Arc();
         arc.setCenterX(x);
@@ -255,7 +254,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param angle L'angle de l'arc de cercle, permettant ainsi sa rotation et une bonne disposition
      */
 
-    public void initGrandArc(int x, int y, double angle) {
+
+    public void initBigArc(int x, int y, double angle) {
         Arc arc = new Arc();
         arc.setCenterX(x);
         arc.setCenterY(y);
@@ -276,11 +276,9 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
     }
 
-
     public static void main(String[] args) {
         launch(args);
     }
-
 
     /**
      * Méthode permettant la gestion des événements liés à la souris
@@ -324,8 +322,9 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 Piece piece = pionSelectionne;
 
                 //on vérifie si l'on peut prendre le pion
-                if (checkKill(p, startX, startY, endX, endY) && p.getType() != piece.getType()) {
-                    kill(piece, p);
+                if (checkLaunch(piece, startX, startY, endX, endY) && p.getType() != piece.getType()) {
+                    System.out.println("rentre");
+                    allKill(piece, p, startX, startY, endX, endY);
                     //pour ne pas permettre le click sur le pion adverse
                 } else if (piece.isSelected()) {
 
@@ -369,18 +368,17 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param piece le pion qui se déplacera
      * @param p     Le pion qui se fera prendre
      */
-    private void kill(Piece piece, Piece p) {
-
-
+    private void kill(Piece piece, Piece p, int shiftX, int shiftY, boolean reverse, int radius) {
         //Chemin à "parcourir" pour l'animation complète
         Path path = new Path();
 
+        System.out.println("shiftX, shiftY = " + shiftX + " " + shiftY);
         /*
         on ajoute au chemin la translation suivant une ligne
         MoveTo = point de départ
         LineTo point d'arrivée
          */
-        path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(3 * widthStep, 4 * heightStep));
+        path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
 
         /*
         on ajoute au chemin les données en rapport avec l'arc de cercle
@@ -388,9 +386,10 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         ArcTo l'arc de cercle
         sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
          */
-        path.getElements().addAll(new MoveTo(3 * widthStep, 4 * heightStep), new ArcTo(55, 55, 0, 4 * widthStep, 3 * heightStep, true, true));
-        path.getElements().addAll(new MoveTo(4*widthStep,3*heightStep),new LineTo(p.getCenterX(),p.getCenterY()));
-
+        path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse));
+        path.getElements().addAll(new MoveTo(shiftY * widthStep, shiftX * heightStep), new LineTo(p.getCenterX(), p.getCenterY()));
+        path.setStroke(Color.BLACK);
+        path.setStrokeWidth(20);
 
         //permet de faire l'animation, celle-ci durera 3 secondes
         PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
@@ -406,7 +405,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         //lorsque l'animation est terminée alors on prend le pion
         pt.setOnFinished(e -> {
             if (piece.getType() == PieceType.P1) {
-                System.out.println(piece.toString());
                 root.getChildren().remove(p);
                 getlPlayer().get(0).getlPiece().remove(p);
             } else {
@@ -420,69 +418,185 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
     /**
      * Permet de vérifier si une prise est possible ou non
      *
-     * @param p      Le pion visé
+     * @param piece     Le pion visé
      * @param startX l'abscisse du pion de départ
      * @param startY l'ordonnée du pion de départ
      * @param endX   l'abscisse du pion d'arrivée
      * @param endY   l'ordonnée du pion d'arrivée
      * @return true si l'on peut prendre un pion. Il est de type boolean
      */
-    public boolean checkKill(Piece p, int startX, int startY, int endX, int endY) {
+    public boolean checkLaunch(Piece piece, int startX, int startY, int endX, int endY) {
 
-        //si l'on est sur un coin on return false
+        int cpt;
+
+        if (piece.getType() == PieceType.P1) {
+            cpt = 0;
+            if (startX == 1) {
+                if (endY == 1) {
+                    for (Piece p : getlPlayer().get(0).getlPiece()) {
+                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                        if (_y < startY) {
+                            cpt++;
+                            if (cpt > 1) {
+                                return false;
+                            }
+
+                        }
+                    }
+                }
+            } else if (startY == 1) {
+                if (endX == 1) {
+                    for (Piece p : getlPlayer().get(0).getlPiece()) {
+                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                        if (_y < startY) {
+                            cpt++;
+                            if (cpt > 1) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            } else if (startX == 2) {
+                if (endY == 2) {
+                    for (Piece p : getlPlayer().get(0).getlPiece()) {
+                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                        if (_y < startY) {
+                            cpt++;
+                            if (cpt > 1) {
+                                return false;
+                            }
+
+                        }
+                    }
+                }
+            } else if (startY == 2) {
+                if (endX == 2) {
+                    for (Piece p : getlPlayer().get(0).getlPiece()) {
+                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                        if (_y < startY) {
+                            cpt++;
+                            if (cpt > 1) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            } else if (piece.getType() == PieceType.P2) {
+                cpt = 0;
+                if (startX == 1) {
+                    if (endY == 1) {
+                        for (Piece p : getlPlayer().get(1).getlPiece()) {
+                            int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                            int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                            if (_y < startY) {
+                                cpt++;
+                                if (cpt > 1) {
+                                    return false;
+                                }
+
+                            }
+                        }
+                    }
+                } else if (startY == 1) {
+                    if (endX == 1) {
+                        for (Piece p : getlPlayer().get(1).getlPiece()) {
+                            int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                            int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                            if (_y < startY) {
+                                cpt++;
+                                if (cpt > 1) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                } else if (startX == 2) {
+                    if (endY == 2) {
+                        for (Piece p : getlPlayer().get(1).getlPiece()) {
+                            int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                            int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                            if (_y < startY) {
+                                cpt++;
+                                if (cpt > 1) {
+                                    return false;
+                                }
+
+                            }
+                        }
+                    }
+                } else if (startY == 2) {
+                    if (endX == 2) {
+                        for (Piece p : getlPlayer().get(1).getlPiece()) {
+                            int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                            int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+
+                            if (_y < startY) {
+                                cpt++;
+                                if (cpt > 1) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+
+
+    }
+
+    public boolean checkCoo(int startX, int startY, int endX, int endY) {
+
         if (((endX == 0) && (endY == 0 || endY == 5)) || ((endX == 5) && (endY == 0 || endY == 5))) {
             return false;
         }
 
-        /*
-         Vérification s'il existe un ou plusieurs pions à gauche du pion de départ
-         Vérification s'il existe au moins 1 pion en sortie d'arc de cercle
-         */
-
-        if (p.getType() == PieceType.P1) {
-            System.out.println("P1");
-            int cpt = 0;
-            for (Piece _p : getlPlayer().get(1).getlPiece()) {
-                int _x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
-                int _y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
-
-                if (_y == startY && _x < startX) {
-                    return false;
-                }
-
-                if (_x == 2) {
-                    cpt++;
-                    if (cpt > 1) {
-                        return false;
-                    }
-                }
-
+        if (startX == 1) {
+            if (endX == 1) {
+                return true;
             }
-        } else if (p.getType() == PieceType.P2) {
-            int cpt = 0;
-            System.out.println("P2");
-            for (Piece _p : getlPlayer().get(0).getlPiece()) {
-
-                int _x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
-                int _y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
-
-                if (_y == startY && _x < startX) {
-                    return false;
-                }
-
-                if (_x == 1) {
-                    cpt++;
-                    if (cpt > 1) {
-                        return false;
-                    }
-                }
+        } else if (startY == 1) {
+            if (endX == 1) {
+                return true;
+            }
+        } else if (startX == 2) {
+            if (endX == 2) {
+                return true;
+            }
+        } else if (startY == 2) {
+            if (endX == 2) {
+                return true;
             }
         }
 
-
-        //Si après vérification on arrive ici alors le pion est prenable.
-        return true;
+        return false;
     }
 
+
+    public void allKill(Piece piece, Piece p, int startX, int startY, int endX, int endY) {
+
+        if (endX == 1 && startY == 1) {
+            System.out.println("1");
+            kill(piece, p, 3, (decalage + startY), true, 55);
+        } else if (endX == 2 && startY == 2) {
+            System.out.println("2");
+            kill(piece, p, 3, (decalage + startY), true, 110);
+        }
+
+
+    }
 
 }
