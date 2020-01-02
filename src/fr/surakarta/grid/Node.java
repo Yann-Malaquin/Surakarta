@@ -11,6 +11,8 @@ import javafx.scene.shape.Circle;
 
 public class Node extends Circle {
 
+    private Boolean verification;
+
     /**
      * Constructeur Node.
      *
@@ -20,8 +22,9 @@ public class Node extends Circle {
      * @param y
      *          L'ordonnée du noeud
      */
-    public Node(double x, double y){
+    public Node(double x, double y, boolean v){
         super(x,y,15, Color.BLACK);
+        verification=v;
     }
 
 
@@ -32,5 +35,13 @@ public class Node extends Circle {
 
     public String toString(){
         return getCenterX() +";"+ getCenterY();
+    }
+
+    public void setVerification(Boolean v){
+        verification=v;
+    }
+
+    public boolean getverification(){
+        return this.verification;
     }
 }
