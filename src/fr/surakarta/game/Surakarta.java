@@ -418,11 +418,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             }
         }
 
-        /*
-        on ajoute au chemin la translation suivant une ligne
-        MoveTo = point de départ
-        LineTo point d'arrivée
-         */
         path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
 
         /*
@@ -431,11 +426,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         ArcTo l'arc de cercle
         sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
          */
-        path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse));
-        path.getElements().addAll(new MoveTo(shiftY * widthStep, shiftX * heightStep), new LineTo(p.getCenterX(), p.getCenterY()));
-        path.setStroke(Color.BLACK);
-        path.setStrokeWidth(20);
-
+        path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
         //permet de faire l'animation, celle-ci durera 3 secondes
         PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
@@ -451,10 +442,10 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         pt.setOnFinished(e -> {
             if (piece.getType() == PieceType.P1) {
                 root.getChildren().remove(p);
-                getlPlayer().get(0).getlPiece().remove(p);
-            } else {
-                root.getChildren().remove(p);
                 getlPlayer().get(1).getlPiece().remove(p);
+            } else {
+                System.out.println(root.getChildren().indexOf(p));
+                getlPlayer().get(0).getlPiece().remove(p);
             }
         });
     }
@@ -470,9 +461,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @return true si l'on peut prendre un pion. Il est de type boolean
      */
     public boolean checkLaunch(Piece piece, int startX, int startY, int endX, int endY) {
-
-        System.out.println(piece.toString() + " " + startX + " " + startY + " " + endX + " " + endY);
-
         int cpt;
 
         if (piece.getType() == PieceType.P1) {
@@ -484,7 +472,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(0).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1: startX = 1 , endY = 1; x,y = " + _x + " " + _y);
                         if (_x == 1) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -506,7 +493,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(0).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1 : startX = 1 , endX = 1; x,y = " + _x + " " + _y);
                         if (_x == 1) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -524,13 +510,33 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                             }
                         }
                     }
+                } else if (endX == 4) {
+                    for (Piece p : getlPlayer().get(0).getlPiece()) {
+                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
+                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
+                        if (_x == 4) {
+                            if (_y < endY && _y != startY) {
+                                cpt++;
+                                if (cpt > 0) {
+                                    return false;
+                                }
+                            }
+                        }
+                        if (_y == 1) {
+                            if (_x > endX && _x != startX) {
+                                cpt++;
+                                if (cpt > 0) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
                 }
             } else if (startX == 2 || startY == 2) {
                 if (endY == 2) {
                     for (Piece p : getlPlayer().get(0).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1: startX = 1 , endY = 1; x,y = " + _x + " " + _y);
                         if (_x == 2) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -552,7 +558,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(0).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1 : startX = 1 , endX = 1; x,y = " + _x + " " + _y);
                         if (_x == 2) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -580,7 +585,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(1).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1: startX = 1 , endY = 1; x,y = " + _x + " " + _y);
                         if (_x == 1) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -602,7 +606,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(1).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1 : startX = 1 , endX = 1; x,y = " + _x + " " + _y);
                         if (_x == 1) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -626,7 +629,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(1).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1: startX = 1 , endY = 1; x,y = " + _x + " " + _y);
                         if (_x == 2) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -648,7 +650,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     for (Piece p : getlPlayer().get(1).getlPiece()) {
                         int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
                         int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        System.out.println("P1 : startX = 1 , endX = 1; x,y = " + _x + " " + _y);
                         if (_x == 2) {
                             if (_y < endY && _y != startY) {
                                 cpt++;
@@ -670,20 +671,25 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             }
         }
         return true;
-}
+    }
 
     public void allKill(Piece piece, Piece p, int startX, int startY, int endX, int endY) {
 
         if (endX == 1 && startY == 1) {
+            System.out.println("1");
             kill(piece, p, 3, (decalage + startY), true, 55);
         } else if (endX == 2 && startY == 2) {
+            System.out.println("2");
             kill(piece, p, 3, (decalage + startY), true, 110);
         } else if (endY == 1 && startX == 1) {
+            System.out.println("3");
             kill(piece, p, (decalage + endY), 3, false, 55);
         } else if (endY == 2 && startX == 2) {
+            System.out.println("4");
             kill(piece, p, (decalage + endY), 3, false, 110);
+        } else if (endX == 4 && startY == 1) {
+            System.out.println("4");
+            kill(piece, p, 8, 3, false, 55);
         }
     }
-
-
 }
