@@ -229,15 +229,15 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         }
 
 
-        initSmallArc(170, 170, 0);
-        initSmallArc(440, 170, -90);
-        initSmallArc(170, 440, 90);
-        initSmallArc(440, 440, 180);
+        initSmallArc(3*widthStep, 3*heightStep, 0);
+        initSmallArc(8*widthStep, 3*heightStep, -90);
+        initSmallArc(3*widthStep, 8*heightStep, 90);
+        initSmallArc(8*widthStep, 8*heightStep, 180);
 
-        initBigArc(170, 170, 0);
-        initBigArc(440, 170, -90);
-        initBigArc(170, 440, 90);
-        initBigArc(440, 440, 180);
+        initBigArc(3*heightStep, 3*heightStep, 0);
+        initBigArc(8*widthStep, 3*heightStep, -90);
+        initBigArc(3*widthStep, 8*heightStep, 90);
+        initBigArc(8*widthStep, 8*heightStep, 180);
 
     }
 
@@ -250,7 +250,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param angle L'angle de l'arc de cercle, permettant ainsi sa rotation et une bonne disposition
      */
 
-    public void initSmallArc(int x, int y, double angle) {
+    public void initSmallArc(double x, double y, double angle) {
 
         Arc arc = new Arc();
         arc.setCenterX(x);
@@ -281,7 +281,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param angle L'angle de l'arc de cercle, permettant ainsi sa rotation et une bonne disposition
      */
 
-    public void initBigArc(int x, int y, double angle) {
+    public void initBigArc(double x, double y, double angle) {
         Arc arc = new Arc();
         arc.setCenterX(x);
         arc.setCenterY(y);
@@ -418,7 +418,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             }
         }
 
-        if((endX == 1 && startY == 1) || (endX == 2 && startY == 2) || (endY == 1 && startX == 1) || (endY == 2 && startX == 2)){
+        if ((endX == 1 && startY == 1) || (endX == 2 && startY == 2) || (endY == 1 && startX == 1) || (endY == 2 && startX == 2)) {
             path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
 
         /*
@@ -430,6 +430,9 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
             path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
             //permet de faire l'animation, celle-ci durera 3 secondes
+            path.setStroke(Color.BLACK);
+            path.setStrokeWidth(4);
+            root.getChildren().add(path);
             PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
             //nombre de répétition que l'on souhaite avoir, ici 1
@@ -446,13 +449,41 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     root.getChildren().remove(p);
                     getlPlayer().get(1).getlPiece().remove(p);
                 } else {
-                    System.out.println(root.getChildren().indexOf(p));
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if(endX == 4 && startY == 1){
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX-1) * widthStep, (shiftY-1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+            path.setStroke(Color.BLACK);
+            path.setStrokeWidth(4);
+            root.getChildren().add(path);
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
                     getlPlayer().get(0).getlPiece().remove(p);
                 }
             });
         }
 
-        }
+
+
+    }
 
 
     /**
@@ -682,19 +713,19 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
         if (endX == 1 && startY == 1) {
             System.out.println("1");
-            kill(piece, p, startX,startY,endX,endY,3, (decalage + startY), true, 55);
+            kill(piece, p, startX, startY, endX, endY, 3, (decalage + startY), true, 55);
         } else if (endX == 2 && startY == 2) {
             System.out.println("2");
-            kill(piece, p, startX,startY,endX,endY, 3, (decalage + startY), true, 110);
+            kill(piece, p, startX, startY, endX, endY, 3, (decalage + startY), true, 110);
         } else if (endY == 1 && startX == 1) {
             System.out.println("3");
-            kill(piece, p, startX,startY,endX,endY, (decalage + endY), 3, false, 55);
+            kill(piece, p, startX, startY, endX, endY, (decalage + endY), 3, false, 55);
         } else if (endY == 2 && startX == 2) {
             System.out.println("4");
-            kill(piece, p,  startX,startY,endX,endY,(decalage + endY), 3, false, 110);
+            kill(piece, p, startX, startY, endX, endY, (decalage + endY), 3, false, 110);
         } else if (endX == 4 && startY == 1) {
             System.out.println("4");
-            kill(piece, p,  startX,startY,endX,endY,8, 4, false, 55);
+            kill(piece, p, startX, startY, endX, endY, 8, 4, false, 55);
         }
     }
 }
