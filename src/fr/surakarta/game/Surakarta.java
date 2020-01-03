@@ -408,7 +408,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param piece le pion qui se déplacera
      * @param p     Le pion qui se fera prendre
      */
-    private void kill(Piece piece, Piece p, int shiftX, int shiftY, boolean reverse, int radius) {
+    private void kill(Piece piece, Piece p, int startX, int startY, int endX, int endY, int shiftX, int shiftY, boolean reverse, int radius) {
         //Chemin à "parcourir" pour l'animation complète
         Path path = new Path();
 
@@ -418,7 +418,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
             }
         }
 
-        path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+        if((endX == 1 && startY == 1) || (endX == 2 && startY == 2) || (endY == 1 && startX == 1) || (endY == 2 && startX == 2)){
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
 
         /*
         on ajoute au chemin les données en rapport avec l'arc de cercle
@@ -426,29 +427,33 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         ArcTo l'arc de cercle
         sweepFlag => permet d'inverser l'arc de cercle, ici true car les coordonnées forment l'arc de cercle vers le bas
          */
-        path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
-        //permet de faire l'animation, celle-ci durera 3 secondes
-        PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
-        //nombre de répétition que l'on souhaite avoir, ici 1
-        pt.setCycleCount(1);
-        //on lance l'animation
-        pt.play();
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
-        piece.setCenterX(p.getCenterX());
-        piece.setCenterY(p.getCenterY());
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
 
-        //lorsque l'animation est terminée alors on prend le pion
-        pt.setOnFinished(e -> {
-            if (piece.getType() == PieceType.P1) {
-                root.getChildren().remove(p);
-                getlPlayer().get(1).getlPiece().remove(p);
-            } else {
-                System.out.println(root.getChildren().indexOf(p));
-                getlPlayer().get(0).getlPiece().remove(p);
-            }
-        });
-    }
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    System.out.println(root.getChildren().indexOf(p));
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        }
+
+        }
+
 
     /**
      * Permet de vérifier si une prise est possible ou non
@@ -677,19 +682,19 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
         if (endX == 1 && startY == 1) {
             System.out.println("1");
-            kill(piece, p, 3, (decalage + startY), true, 55);
+            kill(piece, p, startX,startY,endX,endY,3, (decalage + startY), true, 55);
         } else if (endX == 2 && startY == 2) {
             System.out.println("2");
-            kill(piece, p, 3, (decalage + startY), true, 110);
+            kill(piece, p, startX,startY,endX,endY, 3, (decalage + startY), true, 110);
         } else if (endY == 1 && startX == 1) {
             System.out.println("3");
-            kill(piece, p, (decalage + endY), 3, false, 55);
+            kill(piece, p, startX,startY,endX,endY, (decalage + endY), 3, false, 55);
         } else if (endY == 2 && startX == 2) {
             System.out.println("4");
-            kill(piece, p, (decalage + endY), 3, false, 110);
+            kill(piece, p,  startX,startY,endX,endY,(decalage + endY), 3, false, 110);
         } else if (endX == 4 && startY == 1) {
             System.out.println("4");
-            kill(piece, p, 8, 3, false, 55);
+            kill(piece, p,  startX,startY,endX,endY,8, 4, false, 55);
         }
     }
 }
