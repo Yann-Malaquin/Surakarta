@@ -229,15 +229,15 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         }
 
 
-        initSmallArc(3*widthStep, 3*heightStep, 0);
-        initSmallArc(8*widthStep, 3*heightStep, -90);
-        initSmallArc(3*widthStep, 8*heightStep, 90);
-        initSmallArc(8*widthStep, 8*heightStep, 180);
+        initSmallArc(3 * widthStep, 3 * heightStep, 0);
+        initSmallArc(8 * widthStep, 3 * heightStep, -90);
+        initSmallArc(3 * widthStep, 8 * heightStep, 90);
+        initSmallArc(8 * widthStep, 8 * heightStep, 180);
 
-        initBigArc(3*heightStep, 3*heightStep, 0);
-        initBigArc(8*widthStep, 3*heightStep, -90);
-        initBigArc(3*widthStep, 8*heightStep, 90);
-        initBigArc(8*widthStep, 8*heightStep, 180);
+        initBigArc(3 * heightStep, 3 * heightStep, 0);
+        initBigArc(8 * widthStep, 3 * heightStep, -90);
+        initBigArc(3 * widthStep, 8 * heightStep, 90);
+        initBigArc(8 * widthStep, 8 * heightStep, 180);
 
     }
 
@@ -350,7 +350,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 Piece piece = pionSelectionne;
 
                 //on vérifie si l'on peut prendre le pion
-                if (checkLaunch(piece, startX, startY, endX, endY) && p.getType() != piece.getType()) {
+                if (/*checkLaunch(piece, p, startX, startY, endX, endY) && p.getType() != piece.getType()*/ true) {
                     allKill(piece, p, startX, startY, endX, endY);
                     //pour ne pas permettre le click sur le pion adverse
                 } else if (piece.isSelected()) {
@@ -430,9 +430,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
             path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, shiftY * widthStep, shiftX * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
             //permet de faire l'animation, celle-ci durera 3 secondes
-            path.setStroke(Color.BLACK);
-            path.setStrokeWidth(4);
-            root.getChildren().add(path);
             PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
             //nombre de répétition que l'on souhaite avoir, ici 1
@@ -453,12 +450,285 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     getlPlayer().get(0).getlPiece().remove(p);
                 }
             });
-        } else if(endX == 4 && startY == 1){
-            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX-1) * widthStep, (shiftY-1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+        } else if ((endX == 4 && startY == 1) || (endY == 4 && startX == 1)) {
+
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 1) * widthStep, (shiftY - 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
             //permet de faire l'animation, celle-ci durera 3 secondes
-            path.setStroke(Color.BLACK);
-            path.setStrokeWidth(4);
-            root.getChildren().add(path);
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if ((endX == 3 && startY == 2) || (endY == 3 && startX == 2)) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 2) * widthStep, (shiftY - 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } /*else if (endY == 1 && startX == 4) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 1) * widthStep, (shiftY + 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        }*/ else if ((endY == 2 && startX == 3) || (endX == 2 && startY == 3)) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 2) * widthStep, (shiftY + 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if ((endX == 1 && startY == 4) || (endY == 1 && startX == 4)) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 1) * widthStep, (shiftY + 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } /*else if (endX == 2 && startY == 3) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 2) * widthStep, (shiftY + 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if (endY == 4 && startX == 1) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 1) * widthStep, (shiftY - 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if (endY == 3 && startX == 2) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 2) * widthStep, (shiftY - 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } */ else if (endX == 4 && startY == 4) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 1) * widthStep, (shiftY + 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if (endX == 3 && startY == 3) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 2) * widthStep, (shiftY + 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if (endY == 4 && startX == 4) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 1) * widthStep, (shiftY - 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
+            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
+
+            //nombre de répétition que l'on souhaite avoir, ici 1
+            pt.setCycleCount(1);
+            //on lance l'animation
+            pt.play();
+
+            piece.setCenterX(p.getCenterX());
+            piece.setCenterY(p.getCenterY());
+
+            //lorsque l'animation est terminée alors on prend le pion
+            pt.setOnFinished(e -> {
+                if (piece.getType() == PieceType.P1) {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(1).getlPiece().remove(p);
+                } else {
+                    root.getChildren().remove(p);
+                    getlPlayer().get(0).getlPiece().remove(p);
+                }
+            });
+        } else if (endY == 3 && startX == 3) {
+            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
+            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 2) * widthStep, (shiftY - 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
+            //permet de faire l'animation, celle-ci durera 3 secondes
+
             PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
 
             //nombre de répétition que l'on souhaite avoir, ici 1
@@ -480,9 +750,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 }
             });
         }
-
-
-
     }
 
 
@@ -496,236 +763,95 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      * @param endY   l'ordonnée du pion d'arrivée
      * @return true si l'on peut prendre un pion. Il est de type boolean
      */
-    public boolean checkLaunch(Piece piece, int startX, int startY, int endX, int endY) {
-        int cpt;
-
+    public boolean checkLaunch(Piece piece, Piece p, int startX, int startY, int endX, int endY) {
+        int cpt, x, y;
         if (piece.getType() == PieceType.P1) {
-            System.out.println("P1");
+            cpt = 0;
 
-            cpt = 0;
-            if (startX == 1 || startY == 1) {
-                if (endY == 1) {
-                    for (Piece p : getlPlayer().get(0).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 1) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 1) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
+            if (endX == 1 && startY == 1) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
                     }
-                } else if (endX == 1) {
-                    for (Piece p : getlPlayer().get(0).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 1) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 1) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                } else if (endX == 4) {
-                    for (Piece p : getlPlayer().get(0).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 4) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 1) {
-                            if (_x > endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
+
+                    if (x == 1 && y < endY && _p != piece) {
+                        cpt++;
                     }
                 }
-            } else if (startX == 2 || startY == 2) {
-                if (endY == 2) {
-                    for (Piece p : getlPlayer().get(0).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 2) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 2) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                } else if (endX == 2) {
-                    for (Piece p : getlPlayer().get(0).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 2) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 2) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (piece.getType() == PieceType.P2) {
-            System.out.println("P2");
-            cpt = 0;
-            if (startX == 1 || startY == 1) {
-                if (endY == 1) {
-                    for (Piece p : getlPlayer().get(1).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 1) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 1) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                } else if (endX == 1) {
-                    for (Piece p : getlPlayer().get(1).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 1) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 1) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (startX == 2 || startY == 2) {
-                if (endY == 2) {
-                    for (Piece p : getlPlayer().get(1).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 2) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 2) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                } else if (endX == 2) {
-                    for (Piece p : getlPlayer().get(1).getlPiece()) {
-                        int _x = (int) Math.round(p.getCenterX() / widthStep - decalage);
-                        int _y = (int) Math.round(p.getCenterY() / heightStep - decalage);
-                        if (_x == 2) {
-                            if (_y < endY && _y != startY) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (_y == 2) {
-                            if (_x < endX && _x != startX) {
-                                cpt++;
-                                if (cpt > 0) {
-                                    return false;
-                                }
-                            }
-                        }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && _p != piece) {
+                        cpt++;
                     }
                 }
             }
         }
+
+
         return true;
     }
 
     public void allKill(Piece piece, Piece p, int startX, int startY, int endX, int endY) {
 
+        //arcs de cercle haut gauche
         if (endX == 1 && startY == 1) {
             System.out.println("1");
-            kill(piece, p, startX, startY, endX, endY, 3, (decalage + startY), true, 55);
+            kill(piece, p, startX, startY, endX, endY, 3, 4, true, 55);
         } else if (endX == 2 && startY == 2) {
             System.out.println("2");
-            kill(piece, p, startX, startY, endX, endY, 3, (decalage + startY), true, 110);
+            kill(piece, p, startX, startY, endX, endY, 3, 5, true, 110);
         } else if (endY == 1 && startX == 1) {
             System.out.println("3");
-            kill(piece, p, startX, startY, endX, endY, (decalage + endY), 3, false, 55);
+            kill(piece, p, startX, startY, endX, endY, 4, 3, false, 55);
         } else if (endY == 2 && startX == 2) {
             System.out.println("4");
-            kill(piece, p, startX, startY, endX, endY, (decalage + endY), 3, false, 110);
+            kill(piece, p, startX, startY, endX, endY, 5, 3, false, 110);
+
+            //arc de cercle haut droite
         } else if (endX == 4 && startY == 1) {
-            System.out.println("4");
+            System.out.println("5");
             kill(piece, p, startX, startY, endX, endY, 8, 4, false, 55);
+        } else if (endX == 3 && startY == 2) {
+            System.out.println("6");
+            kill(piece, p, startX, startY, endX, endY, 8, 5, false, 110);
+        } else if (endY == 1 && startX == 4) {
+            System.out.println("7");
+            kill(piece, p, startX, startY, endX, endY, 7, 3, true, 55);
+        } else if (endY == 2 && startX == 3) {
+            System.out.println("8");
+            kill(piece, p, startX, startY, endX, endY, 6, 3, true, 110);
+
+            //arc de cercle bas gauche
+        } else if (endX == 1 && startY == 4) {
+            System.out.println("9");
+            kill(piece, p, startX, startY, endX, endY, 3, 7, false, 55);
+        } else if (endX == 2 && startY == 3) {
+            System.out.println("10");
+            kill(piece, p, startX, startY, endX, endY, 3, 6, false, 110);
+        } else if (endY == 4 && startX == 1) {
+            System.out.println("11");
+            kill(piece, p, startX, startY, endX, endY, 4, 8, true, 55);
+        } else if (endY == 3 && startX == 2) {
+            System.out.println("12");
+            kill(piece, p, startX, startY, endX, endY, 5, 8, true, 110);
+
+            //arc de cercle bas droite
+        } else if (endX == 4 && startY == 4) {
+            System.out.println("13");
+            kill(piece, p, startX, startY, endX, endY, 8, 7, true, 55);
+        } else if (endX == 3 && startY == 3) {
+            System.out.println("14");
+            kill(piece, p, startX, startY, endX, endY, 8, 6, true, 110);
+        } else if (endY == 4 && startX == 4) {
+            System.out.println("15");
+            kill(piece, p, startX, startY, endX, endY, 7, 8, false, 55);
+        } else if (endY == 3 && startX == 3) {
+            System.out.println("16");
+            kill(piece, p, startX, startY, endX, endY, 6, 8, false, 110);
         }
     }
 }
