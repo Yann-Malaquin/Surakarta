@@ -18,8 +18,13 @@ import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <b>Surkarta est la class principale du programme. Elle permet le bon déroulé du jeu</b><br>
@@ -95,6 +100,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         return this.lNode;
     }
 
+    public static Logger logger = Logger.getLogger("Suivie");
+
     /**
      * Permet le lancement de la fenêtre
      *
@@ -108,6 +115,15 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         height = 500;
         heightStep = height / 9;
         widthStep = width / 9;
+        logger.setLevel(Level.ALL);
+        Handler fh;
+
+        try {
+            fh = new FileHandler("./simulog.xml");
+            logger.addHandler(fh);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         construirePlateauJeu(primaryStage);
     }
 
@@ -331,6 +347,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 int startY = (int) Math.round(pionSelectionne.getCenterY() / heightStep - decalage);
                 int endX = (int) Math.round(p.getCenterX() / widthStep - decalage);
                 int endY = (int) Math.round(p.getCenterY() / heightStep - decalage);
+                Surakarta.logger.log(Level.INFO, "Déplacement pion :startX, startY, endX, endY= " + startX + "," + startY + "," + endX + "," + endY);
                 System.err.println("startX, startY, endX, endY=" + startX + "," + startY + "," + endX + "," + endY);
                 Piece piece = pionSelectionne;
                 move(piece, p, startX, startY, endX, endY);
@@ -346,11 +363,12 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 int startY = (int) Math.round(pionSelectionne.getCenterY() / heightStep - decalage);
                 int endX = (int) Math.round(p.getCenterX() / widthStep - decalage);
                 int endY = (int) Math.round(p.getCenterY() / heightStep - decalage);
+                Surakarta.logger.log(Level.INFO, "prise pion :startX, startY, endX, endY= " + startX + "," + startY + "," + endX + "," + endY);
                 System.err.println("startX, startY, endX, endY=" + startX + "," + startY + "," + endX + "," + endY);
                 Piece piece = pionSelectionne;
 
                 //on vérifie si l'on peut prendre le pion
-                if (/*checkLaunch(piece, p, startX, startY, endX, endY) && p.getType() != piece.getType()*/ true) {
+                if (checkLaunch(piece, p, startX, startY, endX, endY) && p.getType() != piece.getType()) {
                     allKill(piece, p, startX, startY, endX, endY);
                     //pour ne pas permettre le click sur le pion adverse
                 } else if (piece.isSelected()) {
@@ -394,6 +412,10 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     timeline.getKeyFrames().add(move);
 
                     timeline.play();
+
+                    timeline.setOnFinished(e->{
+
+                    });
                     break;
                 } else {
                     break;
@@ -499,32 +521,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     getlPlayer().get(0).getlPiece().remove(p);
                 }
             });
-        } /*else if (endY == 1 && startX == 4) {
-            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
-            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 1) * widthStep, (shiftY + 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
-            //permet de faire l'animation, celle-ci durera 3 secondes
-
-            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
-
-            //nombre de répétition que l'on souhaite avoir, ici 1
-            pt.setCycleCount(1);
-            //on lance l'animation
-            pt.play();
-
-            piece.setCenterX(p.getCenterX());
-            piece.setCenterY(p.getCenterY());
-
-            //lorsque l'animation est terminée alors on prend le pion
-            pt.setOnFinished(e -> {
-                if (piece.getType() == PieceType.P1) {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(1).getlPiece().remove(p);
-                } else {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(0).getlPiece().remove(p);
-                }
-            });
-        }*/ else if ((endY == 2 && startX == 3) || (endX == 2 && startY == 3)) {
+        } else if ((endY == 2 && startX == 3) || (endX == 2 && startY == 3)) {
             path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
             path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 2) * widthStep, (shiftY + 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
             //permet de faire l'animation, celle-ci durera 3 secondes
@@ -574,82 +571,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     getlPlayer().get(0).getlPiece().remove(p);
                 }
             });
-        } /*else if (endX == 2 && startY == 3) {
-            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
-            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX + 2) * widthStep, (shiftY + 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
-            //permet de faire l'animation, celle-ci durera 3 secondes
-
-            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
-
-            //nombre de répétition que l'on souhaite avoir, ici 1
-            pt.setCycleCount(1);
-            //on lance l'animation
-            pt.play();
-
-            piece.setCenterX(p.getCenterX());
-            piece.setCenterY(p.getCenterY());
-
-            //lorsque l'animation est terminée alors on prend le pion
-            pt.setOnFinished(e -> {
-                if (piece.getType() == PieceType.P1) {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(1).getlPiece().remove(p);
-                } else {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(0).getlPiece().remove(p);
-                }
-            });
-        } else if (endY == 4 && startX == 1) {
-            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
-            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 1) * widthStep, (shiftY - 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
-            //permet de faire l'animation, celle-ci durera 3 secondes
-
-            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
-
-            //nombre de répétition que l'on souhaite avoir, ici 1
-            pt.setCycleCount(1);
-            //on lance l'animation
-            pt.play();
-
-            piece.setCenterX(p.getCenterX());
-            piece.setCenterY(p.getCenterY());
-
-            //lorsque l'animation est terminée alors on prend le pion
-            pt.setOnFinished(e -> {
-                if (piece.getType() == PieceType.P1) {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(1).getlPiece().remove(p);
-                } else {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(0).getlPiece().remove(p);
-                }
-            });
-        } else if (endY == 3 && startX == 2) {
-            path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
-            path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 2) * widthStep, (shiftY - 2) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
-            //permet de faire l'animation, celle-ci durera 3 secondes
-
-            PathTransition pt = new PathTransition(Duration.seconds(3), path, piece);
-
-            //nombre de répétition que l'on souhaite avoir, ici 1
-            pt.setCycleCount(1);
-            //on lance l'animation
-            pt.play();
-
-            piece.setCenterX(p.getCenterX());
-            piece.setCenterY(p.getCenterY());
-
-            //lorsque l'animation est terminée alors on prend le pion
-            pt.setOnFinished(e -> {
-                if (piece.getType() == PieceType.P1) {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(1).getlPiece().remove(p);
-                } else {
-                    root.getChildren().remove(p);
-                    getlPlayer().get(0).getlPiece().remove(p);
-                }
-            });
-        } */ else if (endX == 4 && startY == 4) {
+        } else if (endX == 4 && startY == 4) {
             path.getElements().addAll(new MoveTo(piece.getCenterX(), piece.getCenterY()), new LineTo(shiftX * widthStep, shiftY * heightStep));
             path.getElements().addAll(new MoveTo(shiftX * widthStep, shiftY * heightStep), new ArcTo(radius, radius, 0, (shiftX - 1) * widthStep, (shiftY + 1) * heightStep, true, reverse), new LineTo(p.getCenterX(), p.getCenterY()));
             //permet de faire l'animation, celle-ci durera 3 secondes
@@ -765,6 +687,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
      */
     public boolean checkLaunch(Piece piece, Piece p, int startX, int startY, int endX, int endY) {
         int cpt, x, y;
+
         if (piece.getType() == PieceType.P1) {
             cpt = 0;
 
@@ -782,15 +705,936 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                     }
                 }
                 for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
                     y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
 
-                    if (y == startY && _p != piece) {
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
                         cpt++;
                     }
                 }
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 2 && startY == 2) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 4 && startY == 1) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 3 && startY == 2) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 3 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 1 && startY == 4) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 2 && startY == 3) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 4 && startY == 4) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 3 && startY == 3) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 1 && startX == 1) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        System.out.println("rentre3");
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        System.out.println("rentre4");
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 2 && startX == 2) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 1 && startX == 4) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y < startY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 2 && startX == 3) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 3 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y < startY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 4 && startX == 1) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 3 && startX == 2) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 4 && startX == 4) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 3 && startX == 3) {
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 3 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            }
+
+        } else if (piece.getType() == PieceType.P2) {
+            cpt = 0;
+
+            System.out.println("P2");
+            if (endX == 1 && startY == 1) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 2 && startY == 2) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 4 && startY == 1) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 3 && startY == 2) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 3 && y < endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 1 && startY == 4) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 2 && startY == 3) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x < startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 4 && startY == 4) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endX == 3 && startY == 3) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == startY && x > startX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > endY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == startY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 1 && startX == 1) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && x < startX  && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 2 && startX == 2) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == endX && y < endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 1 && startX == 4) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y < startY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 2 && startX == 3) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 3 && y < startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y < startY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 4 && startX == 1) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 1 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 3 && startX == 2) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x < endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 2 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x < endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 4 && startX == 4) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        cpt++;
+                    }
+
+                    if (x == 4 && y > startY && _p != piece) {
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
+            } else if (endY == 3 && startX == 3) {
+                for (Piece _p : getlPlayer().get(1).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (y == endY && x > endX && _p != piece) {
+                        System.out.println("rentre1");
+                        cpt++;
+                    }
+
+                    if (x == 3 && y > startY && _p != piece) {
+                        System.out.println("rentre2");
+                        cpt++;
+                    }
+                }
+                for (Piece _p : getlPlayer().get(0).getlPiece()) {
+                    x = (int) Math.round(_p.getCenterX() / widthStep - decalage);
+                    y = (int) Math.round(_p.getCenterY() / heightStep - decalage);
+
+                    if (x > endX && y == endY && _p != p) {
+                        System.out.println("rentre3");
+                        cpt++;
+                    }
+
+                    if (x == startX && y > endY && _p != p) {
+                        System.out.println("rentre4");
+                        cpt++;
+                    }
+                }
+
+                if (cpt > 0) {
+                    return false;
+                }
             }
         }
-
 
         return true;
     }
