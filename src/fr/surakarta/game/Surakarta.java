@@ -7,9 +7,15 @@ import fr.surakarta.player.Player;
 import javafx.animation.*;
 import javafx.application.Application;
 import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.stage.Stage;
@@ -73,6 +79,7 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
     private Piece pionSelectionne;
 
+    @FXML
     private Group root = new Group();
 
     private int Tour=0;
@@ -109,6 +116,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
     @Override
     public void start(Stage primaryStage) {
 
+
+
         decalage = 3;
         width = 500;
         height = 500;
@@ -136,6 +145,8 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         // definir la troupe des acteurs et des decors
         Player p1 = new Player("Michel");
         Player p2 = new Player("Jean");
+
+        displayPopupWinner(p1);
 
         setlPlayer(p1);
         setlPlayer(p2);
@@ -693,10 +704,18 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
                 root.getChildren().remove(p);
                 getlPlayer().get(1).getlPiece().remove(p);
                 getlPlayer().get(1).setScore(10);
+
+                if(getlPlayer().get(1).getScore() == 0){
+                    displayPopupWinner(getlPlayer().get(0));
+                }
+
             } else {
                 root.getChildren().remove(p);
                 getlPlayer().get(0).getlPiece().remove(p);
                 getlPlayer().get(0).setScore(10);
+                if(getlPlayer().get(0).getScore() == 0){
+                    displayPopupWinner(getlPlayer().get(1));
+                }
             }
             if(Tour==1){
                 IA();
@@ -1344,5 +1363,29 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
         }
         return false;
     }
+    public void displayPopupWinner(Player p) {
+        Stage primaryStage = new Stage();
+        VBox vb = new VBox();
+        Label winner = new Label(), score = new Label();
+
+        Group root = new Group();
+
+        winner.setText(p.getPseudo() + " à gagné");
+        score.setText("Avec un score de " + p.getScore());
+
+        vb.getChildren().add(winner);
+        vb.getChildren().add(score);
+
+        root.getChildren().add(vb);
+
+        primaryStage.setScene(new Scene(root, 400, 200));
+        primaryStage.setAlwaysOnTop(true);
+        primaryStage.show();
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(5));
+        delay.setOnFinished(event -> primaryStage.close());
+        delay.play();
+    }
+
 
 }
