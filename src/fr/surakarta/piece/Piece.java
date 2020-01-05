@@ -91,4 +91,8 @@ public class Piece extends Circle {
     public String toString() {
         return getCenterX() + ";" + getCenterY();
     }
+
+    public Color getColor() {
+        return color;
+    }
 }
