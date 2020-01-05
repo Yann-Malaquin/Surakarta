@@ -129,8 +129,6 @@ public class Surakarta extends Application implements EventHandler<MouseEvent> {
 
     /**
      * Permet la constrution du plateau de jeu
-     *
-     * @param primaryStage Correspond à la fenêtre entière
      */
 
     private void construirePlateauJeu(Stage primaryStage) {
