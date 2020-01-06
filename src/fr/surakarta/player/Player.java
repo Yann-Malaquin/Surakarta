@@ -58,7 +58,7 @@ public class Player {
      */
     public Player(String _pseudo) {
         this.pseudo = _pseudo;
-        this.score = 120;
+        this.score = 0;
         lPiece = new ArrayList<Piece>();
     }
 
@@ -75,7 +75,7 @@ public class Player {
     }
 
     public void setScore(int score) {
-        this.score -= score;
+        this.score += score;
     }
 
     public List<Piece> getlPiece() {
