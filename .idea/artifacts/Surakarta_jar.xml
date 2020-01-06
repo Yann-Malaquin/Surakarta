@@ -1,8 +1,16 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="Surakarta:jar">
-    <output-path>$PROJECT_DIR$</output-path>
+    <output-path>$PROJECT_DIR$/out/artifacts/Surakarta_jar</output-path>
     <root id="archive" name="Surakarta.jar">
       <element id="module-output" name="Surakarta" />
+      <element id="extracted-dir" path="$Path_FX$/javafx-swt.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.base.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.controls.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.fxml.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.graphics.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.media.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.swing.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$Path_FX$/javafx.web.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

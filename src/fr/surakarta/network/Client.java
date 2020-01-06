@@ -9,7 +9,9 @@ import java.net.UnknownHostException;
 
 
 /**
- * Class représentant un client souhaitant se connecter au serveur en local
+ * <b>Class représentant un client souhaitant se connecter au serveur en local</b>
+ *
+ * @author Billy MORTREUX, Yann MALAQUIN
  */
 public class Client {
     public static void main(String[] args) {

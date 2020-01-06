@@ -5,7 +5,9 @@ import java.io.PrintWriter;
 import java.net.*;
 
 /**
- * Class établissant un serveur en local
+ * <b>Class établissant un serveur en local</b>
+ *
+ * @author Billy MORTREUX, Yann MALAQUIN
  */
 public class Server {
     public static void main(String[] args) {
